@@ -42,15 +42,21 @@ function init () {
                 // prevent site reloading
                 event.preventDefault();
                 
-                auth.call(self, username.val(), password.val(), function (err) {
-                    
-                    if (err) {
-                        return authError.call(self, err);
-                    }
-                    
-                    // emit state
-                    view.state.emit('/');
-                });
+                auth.call(self, username.val(), password.val());
+            });
+            
+            // handle session
+            self.on('session', function (err, session) {
+                if (err) {
+                    return authError.call(self, err);
+                }
+                
+                setSessionCookie.call(self, session);
+                
+                // TODO handle success
+                
+                // emit state
+                view.state.emit('/');
             });
             
             self.emit('ready');
@@ -58,34 +64,28 @@ function init () {
     });
 }
 
-function auth (username, password, callback) {
+function auth (username, password) {
     var self = this;
     
     // check arguments
     if (!username || !password) {
-        return callback(new Error('Missing username or password.'));
+        return authError.call(self, new Error('Missing username or password.'));
     }
     
     // get a session from the server
-    self.emit('auth', null, [username, password], function (err, session) {
-        
-        if (err) {
-            return callback(err);
-        }
-        
-        setSessionCookie.call(self, session);
-        
-        callback();
-    });
+    self.emit('auth', null, [username, password]);
 }
 
 function setSessionCookie (session) {
+    
+    console.log(session);
     // set session
     // reload ws
 }
 
 function authError (err) {
     var self = this;
+    console.error(err);
 }
 
 return module;
