@@ -3,6 +3,16 @@ var View = require(M.config.paths.MODULE_ROOT + 'github/jillix/view/v0.0.1/serve
 
 module.exports = init;
 
+// handle sessions
+M.on('request', function (req, res, callback) {
+    
+    // add public role to request
+    req.session = {};
+    req.session[M.config.session.role] = M.config.session.publicRole;
+    
+    callback(req, res);
+});
+
 function init (config) {
     var self = this;
     
@@ -11,8 +21,33 @@ function init (config) {
     self.on('auth', auth);
 }
 
-function auth () {
+function auth (err, data) {
     var self = this;
     
-    self.emit('session', null, {test: 'response'});
+    var username = data[0];
+    var password = data[1];
+    var users = M.db.mono.collection('m_users');
+    
+    if (self.link.ws.session) {
+        console.log(self.link.ws.session);
+    }
+    
+    users.findOne({name: username, pwd: password}, function (err, user) {
+        
+        if (err || !user) {
+            return self.emit('session', err || 'User not found.');
+        }
+        
+        // TODO create session
+        var session = {
+            id: 'truckenid',
+            loc: user.locale || 'en_US',
+            rid: user.role
+        };
+        
+        // set session
+        self.link.ws.session = session;
+        
+        self.emit('session', err, session);
+    });
 }
