@@ -45,13 +45,23 @@ function init () {
                 auth.call(self, username.val(), password.val());
             });
             
+            // logout handler
+            $(config.logout).on('click', function (event) {
+                event.preventDefault();
+                logout.call(self);
+            });
+            
             // handle session
             self.on('session', function (err, session) {
                 if (err) {
                     return authError.call(self, err);
                 }
                 
-                setSessionCookie.call(self, session);
+                // set session
+                document.cookie = 'sid=' + session[0];
+                
+                // push i18n event to all modules
+                self.pushAll('i18n', null, session[1]);
                 
                 // TODO handle success
                 
@@ -76,11 +86,13 @@ function auth (username, password) {
     self.emit('auth', null, [username, password]);
 }
 
-function setSessionCookie (session) {
+function logout () {
     
-    console.log(session);
-    // set session
-    // reload ws
+    // delete session cookie
+    document.cookie = 'sid=;Max-Age=0';
+    
+    // sever logout
+    self.emit('logout');
 }
 
 function authError (err) {
