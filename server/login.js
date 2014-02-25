@@ -21,6 +21,7 @@ function init (config) {
     self.on('auth', auth);
 }
 
+// check login credentials and create session
 function auth (err, data) {
     var self = this;
     
@@ -45,9 +46,19 @@ function auth (err, data) {
             rid: user.role
         };
         
-        // set session
+        // set session on this connection
         self.link.ws.session = session;
         
         self.emit('session', err, session);
     });
+}
+
+// destroy current session and set public session
+function logout (err) {
+    var self = this;
+    
+    if (!self.link.ws.session) {
+        
+    }
+    
 }
