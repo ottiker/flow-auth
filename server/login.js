@@ -3,16 +3,6 @@ var View = require(M.config.paths.MODULE_ROOT + 'github/jillix/view/v0.0.1/serve
 
 module.exports = init;
 
-// handle sessions
-M.on('request', function (req, res, callback) {
-    
-    // add public role to request
-    req.session = {};
-    req.session[M.config.session.role] = M.config.session.publicRole;
-    
-    callback(req, res);
-});
-
 function init (config) {
     var self = this;
     
@@ -30,7 +20,7 @@ function auth (err, data) {
     var users = M.db.mono.collection('m_users');
     
     if (self.link.ws.session) {
-        console.log(self.link.ws.session);
+        // console.log(self.link.ws.session);
     }
     
     users.findOne({name: username, pwd: password}, function (err, user) {
@@ -39,17 +29,19 @@ function auth (err, data) {
             return self.emit('session', err || 'User not found.');
         }
         
-        // TODO create session
-        var session = {
-            id: 'truckenid',
-            loc: user.locale || 'en_US',
-            rid: user.role
-        };
-        
-        // set session on this connection
-        self.link.ws.session = session;
-        
-        self.emit('session', err, session);
+        // create session
+        var session = M.session.create(user.role, user.locale);
+        session.on('saved', function (err) {
+            
+            if (err) {
+                return self.emit('session', err);
+            }
+            
+            // set session on this connection
+            self.link.ws.session = session;
+            
+            self.emit('session', null, [session.sid, session[M.config.session.locale]]);
+        });
     });
 }
 
@@ -58,7 +50,8 @@ function logout (err) {
     var self = this;
     
     if (!self.link.ws.session) {
-        
+        return self.emit('logout', 'no session');
     }
     
+    self.link.ws.session.destroy();
 }
