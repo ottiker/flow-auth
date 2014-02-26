@@ -12,12 +12,28 @@ function init () {
         return console.error('[login: no view config]');
     }
     
+    // listen to logout event
+    self.on('logout', logout);
+    
     // init view
     View(self).load(config.view, function (err, view) {
         
-        
         if (err) {
             return console.error('[login: ' + err.toString() + ']');
+        }
+        
+        // TODO test if user is not logged in.
+        //  if the url is not public, go to the login
+        //  and return to the previous url after a successful login
+        config.routeToLogin = ["/(?!login/).*"];
+        config.loginState = "/login/";
+        if (!document.cookie && config.routeToLogin) {
+            for (var i = 0; i < config.routeToLogin.length; ++i) {
+                if (window.location.pathname.match(new RegExp(config.routeToLogin[i]))) {
+                    view.state.emit(config.loginState);
+                    break;
+                }
+            }
         }
         
         // init model
@@ -45,12 +61,6 @@ function init () {
                 auth.call(self, username.val(), password.val());
             });
             
-            // logout handler
-            $(config.logout).on('click', function (event) {
-                event.preventDefault();
-                logout.call(self);
-            });
-            
             // handle session
             self.on('session', function (err, session) {
                 if (err) {
@@ -58,7 +68,8 @@ function init () {
                 }
                 
                 // set session
-                document.cookie = 'sid=' + session[0];
+                document.cookie = 'sid=;Max-Age=0';
+                document.cookie = 'sid=' + session[0] + ';path=/';
                 
                 // push i18n event to all modules
                 self.pushAll('i18n', null, session[1]);
