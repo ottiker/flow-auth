@@ -48,10 +48,14 @@ function auth (err, data) {
 // destroy current session and set public session
 function logout (err) {
     var self = this;
+    var session = self.link.ws.session;
     
-    if (!self.link.ws.session) {
+    if (!session) {
         return self.emit('logout', 'no session');
     }
     
-    self.link.ws.session.destroy();
+    session.on('destroyed', function (err) {
+        self.emit('logout');
+    });
+    session.destroy();
 }
