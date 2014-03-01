@@ -9,6 +9,7 @@ function init (config) {
     View(this);
     
     self.on('auth', auth);
+    self.on('deauth', logout);
 }
 
 // check login credentials and create session
@@ -51,11 +52,11 @@ function logout (err) {
     var session = self.link.ws.session;
     
     if (!session) {
-        return self.emit('logout', 'no session');
+        return self.emit('session', 'no session on logout.');
     }
     
     session.on('destroyed', function (err) {
-        self.emit('logout');
+        self.emit('session', err);
     });
     session.destroy();
 }
