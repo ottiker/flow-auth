@@ -31,8 +31,7 @@ function auth (err, data) {
         }
         
         // create session
-        var session = M.session.create(user.role, user.locale);
-        session.on('saved', function (err) {
+        M.session.create(user.role, user.locale, function (err, session) {
             
             if (err) {
                 return self.emit('session', err);
@@ -55,8 +54,8 @@ function logout (err) {
         return self.emit('session', 'no session on logout.');
     }
     
-    session.on('destroyed', function (err) {
+    // destroy session
+    session.destroy(function (err) {
         self.emit('session', err);
     });
-    session.destroy();
 }
