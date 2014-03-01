@@ -12,9 +12,6 @@ function init () {
         return console.error('[login: no view config]');
     }
     
-    // listen to logout event
-    self.on('logout', logout);
-    
     // init view
     View(self).load(config.view, function (err, view) {
         
@@ -35,6 +32,33 @@ function init () {
                 }
             }
         }
+        
+        // listen to logout event
+        self.on('logout', logout);
+        
+        // handle session event
+        self.on('session', function (err, session) {
+            
+            if (err) {
+                return authError.call(self, err);
+            }
+            
+            // remove current session id
+            document.cookie = 'sid=;path=/;Max-Age=0';
+            
+            if (session) {
+                // set session id
+                document.cookie = 'sid=' + session[0] + ';path=/';
+                
+                // push i18n event to all modules
+                self.pushAll('i18n', null, session[1]);
+            }
+            
+            // TODO handle success
+            
+            // emit state
+            view.state.emit(session ? '/' : '/login/');
+        });
         
         // init model
         view.model(config.model, function (err, model) {
@@ -61,25 +85,6 @@ function init () {
                 auth.call(self, username.val(), password.val());
             });
             
-            // handle session
-            self.on('session', function (err, session) {
-                if (err) {
-                    return authError.call(self, err);
-                }
-                
-                // set session
-                document.cookie = 'sid=;Max-Age=0';
-                document.cookie = 'sid=' + session[0] + ';path=/';
-                
-                // push i18n event to all modules
-                self.pushAll('i18n', null, session[1]);
-                
-                // TODO handle success
-                
-                // emit state
-                view.state.emit('/');
-            });
-            
             self.emit('ready');
         });
     });
@@ -98,12 +103,9 @@ function auth (username, password) {
 }
 
 function logout () {
-    
-    // delete session cookie
-    document.cookie = 'sid=;Max-Age=0';
-    
+    var self = this;
     // sever logout
-    self.emit('logout');
+    self.emit('deauth');
 }
 
 function authError (err) {
