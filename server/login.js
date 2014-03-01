@@ -20,10 +20,6 @@ function auth (err, data) {
     var password = data[1];
     var users = M.db.mono.collection('m_users');
     
-    if (self.link.ws.session) {
-        // console.log(self.link.ws.session);
-    }
-    
     users.findOne({name: username, pwd: password}, function (err, user) {
         
         if (err || !user) {
