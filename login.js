@@ -33,6 +33,11 @@ function init () {
             }
         }
         
+        // route to private page if logged in
+        if (document.cookie && config.out === previousState) {
+            view.state.emit(config.in);
+        }
+        
         // listen to logout event
         self.on('logout', logout);
         
@@ -53,6 +58,10 @@ function init () {
                 
                 // push i18n event to all modules
                 self.pushAll('i18n', null, session[1]);
+                
+                // TODO show logout button
+                self.login.hide();
+                self.logout.show();
                 
                 // emit login state
                 return view.state.emit(config.out === previousState ? config.in : previousState);
@@ -76,9 +85,26 @@ function init () {
             view.template.render();
             
             // get dom refs
+            self.login = $('.login_form', view.template.dom);
+            self.logout = $('.logout_form', view.template.dom);
             var username = $(config.usr, view.template.dom);
             var password = $(config.pwd, view.template.dom);
             var remember = $(config.remember, view.template.dom);
+            
+            // logout click
+            $('.logout', self.logout).on('click', function () {
+                self.emit('logout');
+            });
+            
+            // show/hide forms
+            if (document.cookie) {
+                self.login.hide();
+                self.logout.show();
+            } else {
+                self.logout.hide();
+                self.login.show();
+            }
+            
             $(config.submit, view.template.dom).on('click', function (event) {
                 
                 // prevent site reloading
