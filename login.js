@@ -7,6 +7,10 @@ module.exports = init;
 function init () {
     var self = this;
     var config = self.mono.config.data;
+    var previousState = location.pathname;
+    
+    // normalize path
+    previousState += previousState[previousState.length - 1] === '/' ? '' : '/';
     
     if (!config.view) {
         return console.error('[login: no view config]');
@@ -23,11 +27,10 @@ function init () {
         //  if the url is not public, go to the login
         //  and return to the previous url after a successful login
         config.routeToLogin = ["/(?!login/).*"];
-        config.loginState = "/login/";
         if (!document.cookie && config.routeToLogin) {
             for (var i = 0; i < config.routeToLogin.length; ++i) {
                 if (window.location.pathname.match(new RegExp(config.routeToLogin[i]))) {
-                    view.state.emit(config.loginState);
+                    view.state.emit(config.out);
                     break;
                 }
             }
@@ -52,12 +55,13 @@ function init () {
                 
                 // push i18n event to all modules
                 self.pushAll('i18n', null, session[1]);
+                
+                // emit login state
+                return view.state.emit(config.out === previousState ? config.in : previousState);
             }
             
-            // TODO handle success
-            
-            // emit state
-            view.state.emit(session ? '/' : '/login/');
+            // reload to public page, to remove all cached data
+            window.location = config.out;
         });
         
         // init model
@@ -71,7 +75,7 @@ function init () {
             self.model = model;
             
             // render template
-            view.template.render(); 
+            view.template.render();
             
             // get dom refs
             var username = $(config.usr, view.template.dom);
