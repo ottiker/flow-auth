@@ -23,10 +23,7 @@ function init () {
             return console.error('[login: ' + err.toString() + ']');
         }
         
-        // TODO test if user is not logged in.
-        //  if the url is not public, go to the login
-        //  and return to the previous url after a successful login
-        config.routeToLogin = ["/(?!login/).*"];
+        // go to login state if user is not logged in and tries to acces a private page
         if (!document.cookie && config.routeToLogin) {
             for (var i = 0; i < config.routeToLogin.length; ++i) {
                 if (window.location.pathname.match(new RegExp(config.routeToLogin[i]))) {
@@ -42,12 +39,13 @@ function init () {
         // handle session event
         self.on('session', function (err, session) {
             
-            if (err) {
-                return authError.call(self, err);
-            }
-            
             // remove current session id
             document.cookie = 'sid=;path=/;Max-Age=0';
+            
+            if (err) {
+                // TODO show error message
+                return authError.call(self, err);
+            }
             
             if (session) {
                 // set session id
