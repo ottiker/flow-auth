@@ -67,8 +67,8 @@ function init () {
                 return view.state.emit(config.out === previousState ? config.in : previousState);
             }
             
-            // reload to public page, to remove all cached data
-            window.location = config.out;
+            // reload mono, to remove all cached data
+            M.reload();
         });
         
         // init model
@@ -94,6 +94,13 @@ function init () {
             // logout click
             $('.logout', self.logout).on('click', function () {
                 self.emit('logout');
+                
+                // TODO use states for logout animation
+                // reload to public page, to remove all cached data
+                self.logout.css("-webkit-animation-duration", "0.25s");
+                
+                // start animation
+                self.logout.addClass('animated flipOutY');
             });
             
             // show/hide forms
