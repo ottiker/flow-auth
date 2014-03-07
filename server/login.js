@@ -6,10 +6,15 @@ module.exports = init;
 function init (config) {
     var self = this;
     
-    View(this);
-    
     self.on('auth', auth);
     self.on('deauth', logout);
+    
+    // plug View
+    View(self, function (err) {
+        
+        // instance is ready
+        self.emit('ready', err);
+    });
 }
 
 // check login credentials and create session
