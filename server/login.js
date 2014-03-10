@@ -1,10 +1,20 @@
 var M = process.mono;
 var View = require(M.config.paths.MODULE_ROOT + 'github/jillix/view/v0.0.1/server/view');
 
+// TODO make the model configurable
+var model = {name: 'users'};
+
 module.exports = init;
 
 function init (config) {
     var self = this;
+    
+    // TODO remove when db is updated
+    config.model = model;
+    
+    if (!config.model) {
+        self.emit('ready', 'No model configured');
+    }
     
     self.on('auth', auth);
     self.on('deauth', logout);
@@ -12,8 +22,17 @@ function init (config) {
     // plug View
     View(self, function (err) {
         
-        // instance is ready
-        self.emit('ready', err);
+        // get users model
+        self.model(config.model, function (err, users) {
+            
+            // save user model on instance
+            if (users) {
+                self.users = users;
+            }
+            
+            // instance is ready
+            self.emit('ready', err);
+        });
     });
 }
 
@@ -23,9 +42,10 @@ function auth (err, data) {
     
     var username = data[0];
     var password = data[1];
-    var users = M.db.mono.collection('m_users');
     
-    users.findOne({name: username, pwd: password}, function (err, user) {
+    self.users.read({q: {name: username, pwd: password}, o: {limit: 1}}, function (err, user) {
+        
+        user = user[0];
         
         if (err || !user) {
             return self.emit('session', err || 'User not found.');
