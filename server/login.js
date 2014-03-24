@@ -40,6 +40,10 @@ function init (config) {
 function auth (err, data) {
     var self = this;
     
+    if (!data) {
+        return self.emit('session', 'no data');
+    }
+    
     var username = data[0];
     var password = data[1];
     
