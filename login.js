@@ -27,7 +27,7 @@ function init () {
         if (!document.cookie && config.routeToLogin) {
             for (var i = 0; i < config.routeToLogin.length; ++i) {
                 if (window.location.pathname.match(new RegExp(config.routeToLogin[i]))) {
-                    view.state.emit(config.out);
+                    self.route(config.out);
                     break;
                 }
             }
@@ -35,7 +35,7 @@ function init () {
         
         // route to private page if logged in
         if (document.cookie && config.out === previousState) {
-            view.state.emit(config.in);
+            self.route(config.in);
         }
         
         // listen to logout event
@@ -57,14 +57,14 @@ function init () {
                 document.cookie = 'sid=' + session[0] + ';path=/';
                 
                 // push i18n event to all modules
-                self.pushAll('i18n', null, session[1]);
+                self.spill('i18n', null, session[1]);
                 
                 // TODO show logout button
                 self.login.hide();
                 self.logout.show();
                 
                 // emit login state
-                return view.state.emit(config.out === previousState ? config.in : previousState);
+                return self.route(config.out === previousState ? config.in : previousState);
             }
             
             // reload mono, to remove all cached data
