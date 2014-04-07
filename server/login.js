@@ -20,19 +20,18 @@ function init (config) {
     self.on('deauth', logout);
     
     // plug View
-    View(self, function (err) {
+    View(self);
+    
+    // get users model
+    self.model(config.model, function (err, users) {
         
-        // get users model
-        self.model(config.model, function (err, users) {
-            
-            // save user model on instance
-            if (users) {
-                self.users = users;
-            }
-            
-            // instance is ready
-            self.emit('ready', err);
-        });
+        // save user model on instance
+        if (users) {
+            self.users = users;
+        }
+        
+        // instance is ready
+        self.emit('ready', err);
     });
 }
 
