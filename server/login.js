@@ -1,5 +1,4 @@
 var M = process.mono;
-var View = require(M.config.paths.MODULE_ROOT + 'github/jillix/view/v0.0.1/server/view');
 
 // TODO make the model configurable
 var model = {name: 'users'};
@@ -16,11 +15,8 @@ function init (config) {
         self.emit('ready', 'No model configured');
     }
     
-    self.on('auth', auth);
-    self.on('deauth', logout);
-    
-    // plug View
-    View(self);
+    self.on('auth>', auth);
+    self.on('deauth>', logout);
     
     // get users model
     self.model(config.model, function (err, users) {
@@ -40,31 +36,37 @@ function auth (err, data) {
     var self = this;
     
     if (!data) {
-        return self.emit('session', 'no data');
+        return self.emit('<session', 'no data');
     }
     
-    var username = data[0];
-    var password = data[1];
+    var request = {
+        m: 'findOne',
+        d: {
+            q: {
+                name: data[0],
+                pwd: data[1]
+            },
+            o: {limit: 1}
+        }
+    };
     
-    self.users.read({q: {name: username, pwd: password}, o: {limit: 1}}, function (err, user) {
-        
-        user = user[0];
+    self.users.request(request, function (err, user) {
         
         if (err || !user) {
-            return self.emit('session', err || 'User not found.');
+            return self.emit('<session', err || 'User not found.');
         }
         
         // create session
         M.session.create(user.role, user.locale, function (err, session) {
             
             if (err) {
-                return self.emit('session', err);
+                return self.emit('<session', err);
             }
             
             // set session on this connection
             self.link.ws.session = session;
             
-            self.emit('session', null, [session.sid, session[M.config.session.locale]]);
+            self.emit('<session', null, [session.sid, session[M.config.session.locale]]);
         });
     });
 }
@@ -75,11 +77,11 @@ function logout (err) {
     var session = self.link.ws.session;
     
     if (!session) {
-        return self.emit('session', 'no session on logout.');
+        return self.emit('<session', 'no session on logout.');
     }
     
     // destroy session
     session.destroy(function (err) {
-        self.emit('session', err);
+        self.emit('<session', err);
     });
 }
