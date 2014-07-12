@@ -1,31 +1,25 @@
 var M = process.mono;
 
-// TODO make the model configurable
-var model = {name: 'users'};
-
 module.exports = init;
 
 function init (config) {
     var self = this;
-    
-    // TODO remove when db is updated
-    config.model = model;
-    
+
     if (!config.model) {
         self.emit('ready', 'No model configured');
     }
-    
+
     self.on('auth>', auth);
     self.on('deauth>', logout);
-    
+
     // get users model
-    self.model(config.model, function (err, users) {
-        
+    self.Z.model(config.model, function (err, users) {
+
         // save user model on instance
         if (users) {
             self.users = users;
         }
-        
+
         // instance is ready
         self.emit('ready', err);
     });
@@ -34,38 +28,35 @@ function init (config) {
 // check login credentials and create session
 function auth (err, data) {
     var self = this;
-    
+
     if (!data) {
         return self.emit('<session', 'no data');
     }
-    
+
     var request = {
         m: 'findOne',
-        d: {
-            q: {
-                name: data[0],
-                pwd: data[1]
-            },
-            o: {limit: 1}
+        q: {
+            name: data[0],
+            pwd: data[1]
         }
     };
-    
+
     self.users.request(request, function (err, user) {
-        
+
         if (err || !user) {
             return self.emit('<session', err || 'User not found.');
         }
-        
+
         // create session
         M.session.create(user.role, user.locale, function (err, session) {
-            
+
             if (err) {
                 return self.emit('<session', err);
             }
-            
+
             // set session on this connection
             self.link.ws.session = session;
-            
+
             self.emit('<session', null, [session.sid, session[M.config.session.locale]]);
         });
     });
@@ -75,11 +66,11 @@ function auth (err, data) {
 function logout (err) {
     var self = this;
     var session = self.link.ws.session;
-    
-    if (!session) {
+
+    if (!session || !session.destroy) {
         return self.emit('<session', 'no session on logout.');
     }
-    
+
     // destroy session
     session.destroy(function (err) {
         self.emit('<session', err);
