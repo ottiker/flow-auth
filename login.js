@@ -2,30 +2,14 @@ Z.wrap('github/jillix/login/v0.0.1/login.js', function (require, module, exports
 
 module.exports = init;
 
+/*
+    type: constructor
+*/
 function init (config, ready) {
     var self = this;
-    var previousState = location.pathname;
-
-    // normalize path
-    previousState += previousState[previousState.length - 1] === '/' ? '' : '/';
-
-    // go to login state if user is not logged in and tries to acces a private page
-    if (!document.cookie && config.routeToLogin) {
-        for (var i = 0; i < config.routeToLogin.length; ++i) {
-            if (window.location.pathname.match(new RegExp(config.routeToLogin[i]))) {
-                self.route(config.out);
-                break;
-            }
-        }
-
-    // route to private page if logged in
-    } else if (document.cookie && config.out === previousState) {
-        self.route(config.in);
-    }
 
     self.auth = auth;
     self.logout = logout;
-    self.login = login;
 
     // render template
     self.view.layout.render();
@@ -43,45 +27,26 @@ function init (config, ready) {
         self.$logout.hide();
     }
 
-    console.log('login:', self._name);
     ready();
 }
 
-function login (err, session) {
+/*
+    type: receiver
+*/
+function session (err, data) {
     var self = this;
-
-    // remove current session id
-    document.cookie = 'sid=;path=/;Max-Age=0';
 
     if (err) {
         // TODO show error message
         return authError.call(self, err);
     }
-
-    if (session) {
-        // set session id
-        document.cookie = 'sid=' + session[0] + ';path=/';
-
-        // show logout button
-        self.$login.hide();
-        self.$logout.show();
-
-        // push i18n event to all modules
-        self.emit({
-            event: 'i18n',
-            all: true
-        }, null, session[1]);
-
-        self.emit('login');
-
-        // emit login state
-        return;
-    }
-
-    // reload client, to remove all cached data
-    self._reload();
+    data = data || {};
+    login.call(self, data.s, data.l);
 }
 
+/*
+    type: actor
+*/
 function auth () {
     var self = this;
     var username = self.$username.val();
@@ -93,16 +58,55 @@ function auth () {
     }
 
     // get a session from the server
-    self.emit('auth>', null, [username, password]);
+    self.emit('auth>', null, {u: username, p: password}, session);
 }
 
+/*
+    type: actor
+*/
 function logout () {
     var self = this;
 
     // sever logout
-    self.emit('deauth>');
+    self.emit('deauth>', null, null, session);
 }
 
+/*
+    type: private
+*/
+function login (session, locale) {
+    var self = this;
+
+    // remove current session id
+    document.cookie = 'sid=;path=/;Max-Age=0';
+
+    if (session) {
+        // set session id
+        document.cookie = 'sid=' + session + ';path=/';
+
+        // show logout button
+        self.$login.hide();
+        self.$logout.show();
+
+        // push i18n event to all modules
+        self.emit({
+            event: 'i18n',
+            all: true
+        }, locale);
+
+        self.emit('login');
+
+        // emit login state
+        return;
+    }
+
+    // reload client, to remove all cached data
+    self._reload();
+}
+
+/*
+    type: private
+*/
 function authError (err) {
     var self = this;
     console.error(err);
