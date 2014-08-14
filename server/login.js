@@ -10,21 +10,20 @@ function init (config, ready) {
     }
 
     self.modelName = config.model.name;
-
-    self.on('auth>', auth);
-    self.on('deauth>', logout);
+    self.auth = auth;
+    self.logout = logout;
 
     // instance is ready
     ready();
 }
 
 // check login credentials and create session
-function auth (err, data) {
+function auth (err, data, callback) {
     var self = this;
     var session = self.link.ws.session;
 
     if (!data || !data.p || !data.u) {
-        return self.emit('<session', 'no data');
+        return callback('no data');
     }
 
     var request = {
@@ -39,42 +38,40 @@ function auth (err, data) {
     self._model(self.modelName, "user", function (err, users) {
 
         if (err) {
-            return self.emit('<session', err);
+            return callback(err);
         }
 
         users.request(request, function (err, user) {
 
             if (err || !user) {
-                return self.emit('<session', err || 'User not found.');
+                return callback(err || 'User not found.');
             }
 
             // create session
-            session.create(user.role, user.locale, function (err, session) {
+            session.create(user.role, user.locale, user._id.toString(), function (err, session) {
 
                 if (err) {
-                    return self.emit('<session', err);
+                    return callback(err);
                 }
 
                 // set session on this connection
                 self.link.ws.session = session;
 
-                self.emit('<session', null, {s: session.sid, l: session[env.Z_SESSION_LOCALE_KEY]});
+                callback(null, {s: session.sid, l: session[env.Z_SESSION_LOCALE_KEY]});
             });
         });
     });
 }
 
 // destroy current session and set public session
-function logout (err) {
+function logout (err, data, callback) {
     var self = this;
     var session = self.link.ws.session;
 
     if (!session || !session.destroy) {
-        return self.emit('<session', 'no session on logout.');
+        return callback('no session on logout.');
     }
 
     // destroy session
-    session.destroy(function (err) {
-        self.emit('<session', err);
-    });
+    session.destroy(callback);
 }
