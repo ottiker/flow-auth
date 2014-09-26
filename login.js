@@ -1,10 +1,20 @@
 module.exports = init;
 
+const COOKIE_FIELD = "sid";
+
 /*
     type: constructor
 */
 function init (config, ready) {
     var self = this;
+
+    if (typeof $ === "undefined") {
+        throw new Error("This module requires jQuery.");
+    }
+
+    if (typeof $.cookie === "undefined") {
+        throw new Error("This module requires jQuery cookie.");
+    }
 
     self.auth = auth;
     self.logout = logout;
@@ -17,7 +27,7 @@ function init (config, ready) {
     self.$logout = $(config.logout, self.view.layout.dom);
 
     // TODO check if session set, not just a cookie
-    if (document.cookie) {
+    if ($.cookie(COOKIE_FIELD)) {
         self.$login.hide();
         self.$logout.show();
     } else {
@@ -75,12 +85,10 @@ function logout () {
 function login (session, locale) {
     var self = this;
 
-    // remove current session id
-    document.cookie = 'sid=;path=/;Max-Age=0';
-
     if (session) {
+
         // set session id
-        document.cookie = 'sid=' + session + ';path=/';
+        $.cookie(COOKIE_FIELD, session);
 
         // show logout button
         self.$login.hide();
