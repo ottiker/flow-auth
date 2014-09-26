@@ -1,5 +1,3 @@
-Z.wrap('github/jillix/login/v0.0.1/login.js', function (require, module, exports) {
-
 module.exports = init;
 
 /*
@@ -111,7 +109,3 @@ function authError (err) {
     var self = this;
     console.error(err);
 }
-
-return module;
-
-});
