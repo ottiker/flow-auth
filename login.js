@@ -1,6 +1,6 @@
 module.exports = init;
 
-const COOKIE_FIELD = "sid";
+var COOKIE_FIELD = "sid";
 
 /*
     type: constructor
