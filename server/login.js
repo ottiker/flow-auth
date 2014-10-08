@@ -27,11 +27,8 @@ function auth (err, data, callback) {
     }
 
     var request = {
-        m: 'findOne',
-        q: {
-            name: data.u,
-            pwd: data.p
-        }
+        name: data.u.toString(),
+        pwd: data.p.toString()
     };
 
     // get users model
@@ -41,7 +38,7 @@ function auth (err, data, callback) {
             return callback(err);
         }
 
-        users.request(request, function (err, user) {
+        users.queries.auth(request, function (err, user) {
 
             if (err || !user) {
                 return callback(err || 'User not found.');
