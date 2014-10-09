@@ -45,14 +45,11 @@ function auth (err, data, callback) {
             }
 
             // create session
-            session.create(user.role, user.locale, user._id.toString(), function (err, session) {
+            session.create(user.role, user.locale, user._id.toString(), function (err) {
 
                 if (err) {
                     return callback(err);
                 }
-
-                // set session on this connection
-                self.link.ws.session = session;
 
                 callback(null, {s: session.sid, l: session[env.Z_SESSION_LOCALE_KEY]});
             });
