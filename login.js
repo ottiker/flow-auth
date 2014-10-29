@@ -12,15 +12,6 @@ function init (config, ready) {
     self.auth = auth;
     self.logout = logout;
 
-    // render template
-    self.view.layout.render();
-
-    // get dom refs
-    self.$username = $(config.usr, self.view.layout.dom);
-    self.$password = $(config.pwd, self.view.layout.dom);
-    self.$login = $(config.login, self.view.layout.dom);
-    self.$logout = $(config.logout, self.view.layout.dom);
-
     self.on('route', loginState);
 
     ready();
@@ -33,11 +24,9 @@ function loginState (state) {
     // TODO and go back to previous url after successful login
 
     if (SID.get()) {
-        self.$login.hide();
-        self.$logout.show();
+        self.emit('userLoggedIn');
     } else {
-        self.$login.show();
-        self.$logout.hide();
+        self.emit('userLoggedOut');
     }
 }
 
@@ -71,18 +60,20 @@ function session (err, data) {
 /*
     type: actor
 */
-function auth () {
+function auth (event, data) {
     var self = this;
-    var username = self.$username.val();
-    var password = self.$password.val();
+
+    // get dom elements
+    var username = document.getElementById(data.user);
+    var password = document.getElementById(data.pass);
 
     // check arguments
-    if (!username || !password) {
+    if (!username || !username.value || !password || !password.value) {
         return console.error(new Error('Missing username or password.'));
     }
 
     // get a session from the server
-    self.emit('auth>', null, {u: username, p: password}, session);
+    self.emit('auth>', null, {u: username.value, p: password.value}, session);
 }
 
 /*
