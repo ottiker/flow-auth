@@ -32,7 +32,7 @@ function auth (err, data, callback) {
     };
 
     // get users model
-    self._model(self.modelName, "user", function (err, users) {
+    self.model(self.modelName, env.Z_ROLE_MODULE, function (err, users) {
 
         if (err) {
             return callback(err);
