@@ -20,7 +20,7 @@ function init (config, ready) {
 // check login credentials and create session
 function auth (err, data, callback) {
     var self = this;
-    var session = self.link.ws.session;
+    var session = self.link.session;
 
     if (!data || !data.p || !data.u) {
         return callback('no data');
@@ -60,7 +60,7 @@ function auth (err, data, callback) {
 // destroy current session and set public session
 function logout (err, data, callback) {
     var self = this;
-    var session = self.link.ws.session;
+    var session = self.link.session;
 
     if (!session || !session.destroy) {
         return callback('no session on logout.');
