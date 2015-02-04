@@ -54,7 +54,7 @@ function session (err, data) {
         }, data.l);
     }
 
-    self._reload();
+    location.reload();
 }
 
 /*
