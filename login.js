@@ -30,7 +30,7 @@ exports.auth = function (event, data) {
 
         // set session cookie
         SID.set(data.sid);
-        location.reload();
+        engine.reload();
 
     }).send(null, data);
 }
@@ -43,7 +43,7 @@ exports.logout = function (event) {
             return;
         }
 
-        location.reload();
+        engine.reload();
 
     }).send(null, SID.get());
 
