@@ -1,71 +1,37 @@
-var env = process.env;
-
-module.exports = init;
-
-function init (config, ready) {
-    var self = this;
-
-    if (!config.model) {
-        return ready(new Error('No model configured'));
-    }
-
-    self.modelName = config.model.name;
-    self.auth = auth;
-    self.logout = logout;
-
-    // instance is ready
-    ready();
-}
+var credentials = require('../credentials.json');
 
 // check login credentials and create session
-function auth (err, data, callback) {
-    var self = this;
-    var session = self.link.session;
+exports.authenticateUser = function (link) {
+    var session = link.session;
 
-    if (!data || !data.p || !data.u) {
-        return callback('no data');
-    }
+    link.data(function(err, data) {
 
-    var request = {
-        name: data.u.toString(),
-        pwd: data.p.toString()
-    };
-
-    // get users model
-    self.model(self.modelName, env.Z_ROLE_MODULE, function (err, users) {
-
-        if (err) {
-            return callback(err);
+        if (!data || !data.email || !data.pass || !credentials || !credentials[data.email] || credentials[data.email] !== data.pass) {
+            link.end('Invalid user name or password');
         }
 
-        users.queries.auth(request, function (err, user) {
+        var user = {
+            role: 'service_user',
+            locale: 'en_US',
+            id: 'Ion'
+        };
 
-            if (err || !user) {
-                return callback(err || 'User not found.');
-            }
-
-            // create session
-            session.create(user.role, user.locale, user._id.toString(), function (err) {
-
-                if (err) {
-                    return callback(err);
-                }
-
-                callback(null, {s: session.sid, l: session[env.Z_SESSION_LOCALE_KEY]});
-            });
+        link.session.create(user.role, user.locale, user.id, function () {
+            link.end(null, { sid: link.session.sid });
         });
     });
 }
 
 // destroy current session and set public session
-function logout (err, data, callback) {
-    var self = this;
-    var session = self.link.session;
+exports.logoutUser = function (link) {
+    var session = link.session;
 
     if (!session || !session.destroy) {
-        return callback('no session on logout.');
+        return link.end('You are already out. Stay out!');
     }
 
     // destroy session
-    session.destroy(callback);
+    session.destroy(function () {
+        link.end();
+    });
 }

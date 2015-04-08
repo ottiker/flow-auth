@@ -1,0 +1,8 @@
+{
+    "client": {
+        "methods": {
+            "auth": {},
+            "logout": {}
+        }
+    }
+}

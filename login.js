@@ -1,23 +1,6 @@
-module.exports = init;
-
 var COOKIE_FIELD = 'sid';
 
-/*
-    type: constructor
-*/
-function init (config, ready) {
-    var self = this;
-
-    // extend instance
-    self.auth = auth;
-    self.logout = logout;
-
-    self.on('route', loginState);
-
-    ready();
-}
-
-function loginState (state) {
+exports.loginState = function (event) {
     var self = this;
 
     // TODO go to login page if url is private and no sid is set
@@ -30,62 +13,41 @@ function loginState (state) {
     }
 }
 
-/*
-    type: receiver
-*/
-function session (err, data) {
+exports.auth = function (event, data) {
     var self = this;
-
-    if (err) {
-        // TODO show error message
-        return;
-    }
-
-    // handle successful login
-    if (data && data.s) {
-
-        // set session id
-        SID.set(data.s);
-
-        // push i18n event to all modules
-        self.emit({
-            event: 'i18n',
-            all: true
-        }, data.l);
-    }
-
-    location.reload();
-}
-
-/*
-    type: actor
-*/
-function auth (event, data) {
-    var self = this;
-
-    // get dom elements
-    var username = document.getElementById(data.user);
-    var password = document.getElementById(data.pass);
 
     // check arguments
-    if (!username || !username.value || !password || !password.value) {
+    if (!data.email || !data.pass) {
         return console.error(new Error('Missing username or password.'));
     }
 
-    // get a session from the server
-    self.emit('auth>', null, {u: username.value, p: password.value}, session);
+    var link = this.link('auth', function (err, data) {
+
+        if (err || !data || !data.sid) {
+            alert(err || 'No session created');
+            return;
+        }
+
+        // set session cookie
+        SID.set(data.sid);
+        location.reload();
+
+    }).send(null, data);
 }
 
-/*
-    type: actor
-*/
-function logout () {
-    var self = this;
+exports.logout = function (event) {
+    var link = this.link('logout', function (err, data) {
+    
+        if (err) {
+            alert(err);
+            return;
+        }
 
-    // sever logout
-    self.emit('deauth>', null, null, session);
+        location.reload();
 
-    // remove session id
+    }).send(null, SID.get());
+
+    // remove session cookie
     SID.rm();
 }
 
