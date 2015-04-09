@@ -11,7 +11,7 @@ exports.signup = function (event, data) {
 
     // check arguments
     if (!data.email || !data.pass) {
-        return error('Please provide both an email and a password.');
+        return error('Please provide both an email and a password.', true);
     }
 
     var link = this.link('signup', function (err, data) {
