@@ -1,7 +1,30 @@
 var credentials = require('../credentials.json');
 
-// check login credentials and create session
-exports.authenticateUser = function (link) {
+/**
+ * Add a new user if it does not exist.
+ *
+ * Type: WS
+ */
+exports.signupUser = function (link) {
+    link.end('Not implemented');
+}
+
+/**
+ * Activate user after signup.
+ *
+ * Type: HTTP
+ */
+exports.activateUser = function (link) {
+    // TODO HTTP is different
+    link.end('Not implemented');
+}
+
+/**
+ * Check login credentials and create session.
+ *
+ * Type: WS
+ */
+exports.loginUser = function (link) {
     var session = link.session;
 
     link.data(function(err, data) {
@@ -22,7 +45,11 @@ exports.authenticateUser = function (link) {
     });
 }
 
-// destroy current session and set public session
+/**
+ * Destroy current session and set public session.
+ *
+ * Type: WS
+ */
 exports.logoutUser = function (link) {
     var session = link.session;
 
@@ -35,3 +62,22 @@ exports.logoutUser = function (link) {
         link.end();
     });
 }
+
+/**
+ * Start a password reset.
+ *
+ * Type: WS
+ */
+exports.forgotPassword = function (link) {
+    link.end('Not implemented');
+}
+
+/**
+ * Finish a password reset.
+ *
+ * Type: WS
+ */
+exports.forgotPassword = function (link) {
+    link.end('Not implemented');
+}
+

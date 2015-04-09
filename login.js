@@ -1,54 +1,105 @@
 var COOKIE_FIELD = 'sid';
 
-exports.loginState = function (event) {
-    var self = this;
-
-    // TODO go to login page if url is private and no sid is set
-    // TODO and go back to previous url after successful login
-
-    if (SID.get()) {
-        self.emit('userLoggedIn');
-    } else {
-        self.emit('userLoggedOut');
+function error(err, isAlert) {
+    console.error(new Error(err));
+    if (isAlert) {
+        alert(err);
     }
 }
 
-exports.auth = function (event, data) {
-    var self = this;
+exports.signup = function (event, data) {
 
     // check arguments
     if (!data.email || !data.pass) {
-        return console.error(new Error('Missing username or password.'));
+        return error('Please provide both an email and a password.');
     }
 
-    var link = this.link('auth', function (err, data) {
+    var link = this.link('signup', function (err, data) {
 
-        if (err || !data || !data.sid) {
-            alert(err || 'No session created');
-            return;
-        }
-
-        // set session cookie
-        SID.set(data.sid);
-        engine.reload();
-
-    }).send(null, data);
-}
-
-exports.logout = function (event) {
-    var link = this.link('logout', function (err, data) {
-    
         if (err) {
             alert(err);
             return;
         }
 
-        engine.reload();
+        // TODO emit only something
+        location.pathname = '/';
+
+    }).send(null, data);
+}
+
+exports.login = function (event, data) {
+
+    // check arguments
+    if (!data.email || !data.pass) {
+        return error('Missing email or password.', true);
+    }
+
+    var link = this.link('login', function (err, data) {
+
+        if (err || !data || !data.sid) {
+            return error(err || 'No session created', true);
+        }
+
+        // set session cookie
+        SID.set(data.sid);
+        location.reload();
+
+    }).send(null, data);
+}
+
+exports.logout = function (event) {
+
+    var link = this.link('logout', function (err, data) {
+    
+        if (err) {
+            return error(err, true);
+        }
+
+        location.reload();
 
     }).send(null, SID.get());
 
     // remove session cookie
     SID.rm();
+}
+
+exports.forgot = function (event, data) {
+
+    // check arguments
+    if (!data.email) {
+        return error('We need an email address to send you the reset password link.', true);
+    }
+
+    var link = this.link('forgot', function (err, data) {
+
+        if (err) {
+            return error(err, true);
+        }
+
+        // TODO only emit something otherwise this is hardcoded here
+        alert('A reset link was sent to your email address.');
+        location.pathname = '/';
+
+    }).send(null, data);
+}
+
+exports.reset = function (event, data) {
+
+    // check arguments
+    if (!data.pass) {
+        return error('You can not have an empty password.', true);
+    }
+
+    var link = this.link('reset', function (err, data) {
+
+        if (err) {
+            return error(err, true);
+        }
+
+        // TODO only emit something otherwise this is hardcoded here
+        location.pathname = '/login';
+
+    }).send(null, data);
 }
 
 // cookie handling
