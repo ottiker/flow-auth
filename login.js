@@ -1,4 +1,8 @@
-var COOKIE_FIELD = 'sid';
+var DEFAULTS = {
+    COOKIE_NAME: 'sid',
+    RETURN_ATTR: 'return',
+    SUCCESS_URL: '/'
+};
 
 function error(err, isAlert) {
     console.error(new Error(err));
@@ -7,34 +11,44 @@ function error(err, isAlert) {
     }
 }
 
+exports.init = function (a, b, c) {
+    this._config.cookieName = this._config.cookieName || DEFAULTS.COOKIE_NAME;
+    this._config.returnAttr = this._config.returnAttr || DEFAULTS.RETURN_ATTR;
+    this._config.successUrl = this._config.successUrl || DEFAULTS.SUCCESS_URL;
+};
+
 exports.signup = function (event, data) {
+
+    var self = this;
 
     // check arguments
     if (!data.email || !data.pass) {
         return error('Please provide both an email and a password.', true);
     }
 
-    var link = this.link('signup', function (err, data) {
+    var link = self.link('signup', function (err, data) {
 
         if (err) {
             alert(err);
             return;
         }
 
-        // TODO emit only something
-        location.pathname = '/';
+        // reload is necessary because of the cookie
+        location.pathname = self._config.successUrl;
 
     }).send(null, data);
-}
+};
 
 exports.login = function (event, data) {
+
+    var self = this;
 
     // check arguments
     if (!data.email || !data.pass) {
         return error('Missing email or password.', true);
     }
 
-    var link = this.link('login', function (err, data) {
+    var link = self.link('login', function (err, data) {
 
         if (err || !data || !data.sid) {
             return error(err || 'No session created', true);
@@ -42,10 +56,10 @@ exports.login = function (event, data) {
 
         // set session cookie
         SID.set(data.sid);
-        location.reload();
+        location.pathname = self._config.successUrl;
 
     }).send(null, data);
-}
+};
 
 exports.logout = function (event) {
 
@@ -61,7 +75,7 @@ exports.logout = function (event) {
 
     // remove session cookie
     SID.rm();
-}
+};
 
 exports.forgot = function (event, data) {
 
@@ -81,7 +95,7 @@ exports.forgot = function (event, data) {
         location.pathname = '/';
 
     }).send(null, data);
-}
+};
 
 exports.reset = function (event, data) {
 
@@ -100,21 +114,21 @@ exports.reset = function (event, data) {
         location.pathname = '/login';
 
     }).send(null, data);
-}
+};
 
 // cookie handling
 var SID = {
 
     get: function () {
         // credentials: https://developer.mozilla.org/en-US/docs/Web/API/Document.cookie
-        return document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + COOKIE_FIELD.replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1") || null;
+        return document.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + this._config.cookieName.replace(/[\-\.\+\*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1') || null;
     },
 
     set: function (sValue) {
-        document.cookie = COOKIE_FIELD + "=" + sValue + ';path=/';
+        document.cookie = this._config.cookieName + '=' + sValue + ';path=/';
     },
 
     rm: function () {
-        document.cookie = COOKIE_FIELD + '=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        document.cookie = this._config.cookieName + '=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
     }
 };
