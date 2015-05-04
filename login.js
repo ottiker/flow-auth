@@ -127,7 +127,7 @@ var SID = {
     },
 
     set: function (name, value) {
-        document.cookie = name + '=' + sValue + ';path=/';
+        document.cookie = name + '=' + value + ';path=/';
     },
 
     rm: function (name) {
