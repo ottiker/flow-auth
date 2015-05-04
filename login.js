@@ -11,7 +11,7 @@ function error(err, isAlert) {
     }
 }
 
-exports.init = function (a, b, c) {
+exports.init = function () {
     this._config.cookieName = this._config.cookieName || DEFAULTS.COOKIE_NAME;
     this._config.returnAttr = this._config.returnAttr || DEFAULTS.RETURN_ATTR;
     this._config.successUrl = this._config.successUrl || DEFAULTS.SUCCESS_URL;
@@ -55,7 +55,7 @@ exports.login = function (event, data) {
         }
 
         // set session cookie
-        SID.set(data.sid);
+        SID.set(self._config.cookieName, data.sid);
         location.pathname = self._config.successUrl;
 
     }).send(null, data);
@@ -63,7 +63,9 @@ exports.login = function (event, data) {
 
 exports.logout = function (event) {
 
-    var link = this.link('logout', function (err, data) {
+    var self = this;
+
+    var link = self.link('logout', function (err, data) {
     
         if (err) {
             return error(err, true);
@@ -71,10 +73,10 @@ exports.logout = function (event) {
 
         location.reload();
 
-    }).send(null, SID.get());
+    }).send(null, SID.get(self._config.cookieName));
 
     // remove session cookie
-    SID.rm();
+    SID.rm(self._config.cookieName);
 };
 
 exports.forgot = function (event, data) {
@@ -119,16 +121,16 @@ exports.reset = function (event, data) {
 // cookie handling
 var SID = {
 
-    get: function () {
+    get: function (name) {
         // credentials: https://developer.mozilla.org/en-US/docs/Web/API/Document.cookie
-        return document.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + this._config.cookieName.replace(/[\-\.\+\*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1') || null;
+        return document.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + name.replace(/[\-\.\+\*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1') || null;
     },
 
-    set: function (sValue) {
-        document.cookie = this._config.cookieName + '=' + sValue + ';path=/';
+    set: function (name, value) {
+        document.cookie = name + '=' + sValue + ';path=/';
     },
 
-    rm: function () {
-        document.cookie = this._config.cookieName + '=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    rm: function (name) {
+        document.cookie = name + '=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
     }
 };
