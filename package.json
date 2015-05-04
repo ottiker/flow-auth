@@ -1,6 +1,6 @@
 {
     "name": "login",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "description": "jillix engine login module",
     "main": "server/login.js",
     "repository": {
