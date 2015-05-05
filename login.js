@@ -1,7 +1,9 @@
 var DEFAULTS = {
-    COOKIE_NAME: 'sid',
-    RETURN_ATTR: 'return',
-    SUCCESS_URL: '/'
+    HOME_URL: '/',
+    LOGIN_URL: '/login',
+    SUCCESS_URL: '/',
+    RETURN_PARAM: 'return',
+    SESSION_COOKIE: 'sid'
 };
 
 function error(err, isAlert) {
@@ -12,9 +14,31 @@ function error(err, isAlert) {
 }
 
 exports.init = function () {
-    this._config.cookieName = this._config.cookieName || DEFAULTS.COOKIE_NAME;
-    this._config.returnAttr = this._config.returnAttr || DEFAULTS.RETURN_ATTR;
-    this._config.successUrl = this._config.successUrl || DEFAULTS.SUCCESS_URL;
+    // this makes sure we avoid massive code changes on future API changes
+    this.C = this._config;
+
+    // initialize defaults
+    this.C.homeUrl = this.C.homeUrl || DEFAULTS.HOME_URL;
+    this.C.loginUrl = this.C.loginUrl || DEFAULTS.LOGIN_URL;
+    this.C.successUrl = this.C.successUrl || DEFAULTS.SUCCESS_URL;
+    this.C.returnParam = this.C.returnParam || DEFAULTS.RETURN_PARAM;
+    this.C.sessionCookie = this.C.sessionCookie || DEFAULTS.SESSION_COOKIE;
+
+    // normalize pathname and login URL (must end with / for comparison)
+    var pn = window.location.pathname;
+    if (pn.substr(-1) !== '/') {
+        pn += '/';
+    }
+    var lu = this.C.loginUrl;
+    if (lu.substr(-1) !== '/') {
+        lu += '/';
+    }
+
+    // add return URL query string parameter if not on the login page
+    if (pn.indexOf(lu) !== 0 && !SID.get(this.C.sessionCookie) && pn !== this.C.homeUrl) {
+        var returnUrl = window.location.pathname + window.location.search + window.location.hash;
+        window.location = this.C.loginUrl + '?' + this.C.returnParam + '=' + encodeURIComponent(returnUrl);
+    }
 };
 
 exports.signup = function (event, data) {
@@ -33,8 +57,8 @@ exports.signup = function (event, data) {
             return;
         }
 
-        // reload is necessary because of the cookie
-        location.pathname = self._config.successUrl;
+        // navigate to success URL
+        navigateSuccess.call(self);
 
     }).send(null, data);
 };
@@ -55,11 +79,26 @@ exports.login = function (event, data) {
         }
 
         // set session cookie
-        SID.set(self._config.cookieName, data.sid);
-        location.pathname = self._config.successUrl;
+        SID.set(self.C.sessionCookie, data.sid);
+        // navigate to success URL
+        navigateSuccess.call(self);
 
     }).send(null, data);
 };
+
+function navigateSuccess() {
+    var ls = window.location.search;
+    var ra = this.C.returnParam;
+
+    // either the success URL or the return URL
+    var redirectUrl = this.C.successUrl;
+    if (ls.indexOf(ra + '=') >= 0) {
+        redirectUrl = decodeURIComponent(ls.substr(ls.indexOf(ra + '=') + ra.length + 1));
+    }
+
+    // navigate
+    window.location = redirectUrl;
+}
 
 exports.logout = function (event) {
 
@@ -71,12 +110,13 @@ exports.logout = function (event) {
             return error(err, true);
         }
 
-        location.reload();
+        // navigate to home URL
+        window.location = self.C.homeUrl;
 
-    }).send(null, SID.get(self._config.cookieName));
+    }).send(null, SID.get(self.C.sessionCookie));
 
     // remove session cookie
-    SID.rm(self._config.cookieName);
+    SID.rm(self.C.sessionCookie);
 };
 
 exports.forgot = function (event, data) {

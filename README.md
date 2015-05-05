@@ -10,10 +10,12 @@ The web term version for Engine
     "name": "my_login", // module instance name
     "module": "login", // npm node module name
     "client": {
-        "config": {
-            "cookieName": "sid",
-            "successUrl": "/",
-            "returnUrlAttr": "return"
+        "config": {                 // the values below are the defaults
+            "homeUrl": "/",         // the URL to navigate after logout
+            "loginUrl": "/login",   // the URL to navigate when not logged in and accessing private pages
+            "successUrl": "/",      // the URL to navigate after successful login or signup
+            "sessionCookie": "sid", // the name of the cookie that stores the session
+            "returnParam": "return"  // the name of the query string parameter that stores return URLs
         }
     }
 }
