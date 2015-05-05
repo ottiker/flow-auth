@@ -13,11 +13,44 @@ function error(err, isAlert) {
     }
 }
 
+function emit(eventName, data) {
+    if (this.C.emitEvents) {
+        this.emit({ event: eventName, all: true })
+    }
+}
+
+function navigateSuccess() {
+    var ls = window.location.search;
+    var ra = this.C.returnParam;
+
+    // either the success URL or the return URL
+    var redirectUrl = this.C.successUrl;
+    if (ls.indexOf(ra + '=') >= 0) {
+        redirectUrl = decodeURIComponent(ls.substr(ls.indexOf(ra + '=') + ra.length + 1));
+    }
+
+    // navigate
+    if (window.history.pushState && !this.C.redirect) {
+        try {
+            engine.route(redirectUrl);
+            engine.reload();
+        } catch (err) {
+            // in case the return URL was a hijacked external URL
+            engine.route(this.C.successUrl);
+            engine.reload();
+        }
+    } else {
+        window.location = redirectUrl;
+    }
+}
+
 exports.init = function () {
     // this makes sure we avoid massive code changes on future API changes
     this.C = this._config;
 
     // initialize defaults
+    this.C.redirect = Boolean(this.C.redirect);
+    this.C.emitEvents = Boolean(this.C.emitEvents);
     this.C.homeUrl = this.C.homeUrl || DEFAULTS.HOME_URL;
     this.C.loginUrl = this.C.loginUrl || DEFAULTS.LOGIN_URL;
     this.C.successUrl = this.C.successUrl || DEFAULTS.SUCCESS_URL;
@@ -50,12 +83,17 @@ exports.signup = function (event, data) {
         return error('Please provide both an email and a password.', true);
     }
 
+    emit.call(self, 'login_signup');
+
     var link = self.link('signup', function (err, data) {
 
         if (err) {
+            emit.call(self, 'login_signup_error');
             alert(err);
             return;
         }
+
+        emit.call(self, 'login_signup_ok');
 
         // navigate to success URL
         navigateSuccess.call(self);
@@ -72,11 +110,16 @@ exports.login = function (event, data) {
         return error('Missing email or password.', true);
     }
 
+    emit.call(self, 'login_login');
+
     var link = self.link('login', function (err, data) {
 
         if (err || !data || !data.sid) {
+            emit.call(self, 'login_login_error');
             return error(err || 'No session created', true);
         }
+
+        emit.call(self, 'login_login_ok');
 
         // set session cookie
         SID.set(self.C.sessionCookie, data.sid);
@@ -86,29 +129,20 @@ exports.login = function (event, data) {
     }).send(null, data);
 };
 
-function navigateSuccess() {
-    var ls = window.location.search;
-    var ra = this.C.returnParam;
-
-    // either the success URL or the return URL
-    var redirectUrl = this.C.successUrl;
-    if (ls.indexOf(ra + '=') >= 0) {
-        redirectUrl = decodeURIComponent(ls.substr(ls.indexOf(ra + '=') + ra.length + 1));
-    }
-
-    // navigate
-    window.location = redirectUrl;
-}
-
 exports.logout = function (event) {
 
     var self = this;
 
+    emit.call(self, 'login_logout');
+
     var link = self.link('logout', function (err, data) {
     
         if (err) {
+            emit.call(self, 'login_logout_error');
             return error(err, true);
         }
+
+        emit.call(self, 'login_logout_ok');
 
         // navigate to home URL
         window.location = self.C.homeUrl;
@@ -119,6 +153,7 @@ exports.logout = function (event) {
     SID.rm(self.C.sessionCookie);
 };
 
+// TODO
 exports.forgot = function (event, data) {
 
     // check arguments
@@ -139,6 +174,7 @@ exports.forgot = function (event, data) {
     }).send(null, data);
 };
 
+// TODO
 exports.reset = function (event, data) {
 
     // check arguments

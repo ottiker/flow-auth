@@ -10,16 +10,41 @@ The web term version for Engine
     "name": "my_login", // module instance name
     "module": "login", // npm node module name
     "client": {
-        "config": {                 // the values below are the defaults
-            "homeUrl": "/",         // the URL to navigate after logout
-            "loginUrl": "/login",   // the URL to navigate when not logged in and accessing private pages
-            "successUrl": "/",      // the URL to navigate after successful login or signup
-            "sessionCookie": "sid", // the name of the cookie that stores the session
-            "returnParam": "return"  // the name of the query string parameter that stores return URLs
+        "config": {                     // the values below are the defaults
+            // the URL to navigate after logout
+            "homeUrl": "/",
+            // the URL to navigate when not logged in and accessing private pages
+            "loginUrl": "/login",
+            // the URL to navigate after successful login or signup
+            "successUrl": "/",
+            // the name of the cookie that stores the session
+            "sessionCookie": "sid",
+            // the name of the query string parameter that stores return URLs
+            "returnParam": "return",
+            // set to true if this module should reload the page instead of soft navigation
+            "redirect": true,
+            // set to true if you want this module to emit events on the way
+            "emitEvents": true
         }
     }
 }
 ```
+
+## Emitted events
+
+If the `emitEvents` options is set to true, the following events will be emitted:
+
+| Event                | Description   |
+| -------------------- | ------------- |
+| `login_signup`       | Emitted before the signup request is sent. |
+| `login_signup_ok`    | Emitted on a successful signup request.    |
+| `login_signup_error` | Emitted when an error occurs upon signup.  |
+| `login_login`        | Emitted before the login request is sent.  |
+| `login_login_ok`     | Emitted on a successful login request.     |
+| `login_login_error`  | Emitted when an error occurs upon login.   |
+| `login_logout`       | Emitted before the logout request is sent. |
+| `login_logout_ok`    | Emitted on a successful logout request.    |
+| `login_logout_error` | Emitted when an error occurs upon logout.  |
 
 ## How to contribute
 

@@ -7,7 +7,7 @@ var credentials = require('../credentials.json');
  */
 exports.signupUser = function (link) {
     link.end('Not implemented');
-}
+};
 
 /**
  * Activate user after signup.
@@ -17,7 +17,7 @@ exports.signupUser = function (link) {
 exports.activateUser = function (link) {
     // TODO HTTP is different
     link.end('Not implemented');
-}
+};
 
 /**
  * Check login credentials and create session.
@@ -40,10 +40,12 @@ exports.loginUser = function (link) {
         };
 
         link.session.create(user.role, user.locale, user.id, function () {
+setTimeout(function() {
             link.end(null, { sid: link.session.sid });
+}, 6000);
         });
     });
-}
+};
 
 /**
  * Destroy current session and set public session.
@@ -61,7 +63,7 @@ exports.logoutUser = function (link) {
     session.destroy(function () {
         link.end();
     });
-}
+};
 
 /**
  * Start a password reset.
@@ -70,7 +72,7 @@ exports.logoutUser = function (link) {
  */
 exports.forgotPassword = function (link) {
     link.end('Not implemented');
-}
+};
 
 /**
  * Finish a password reset.
@@ -79,5 +81,4 @@ exports.forgotPassword = function (link) {
  */
 exports.forgotPassword = function (link) {
     link.end('Not implemented');
-}
-
+};
