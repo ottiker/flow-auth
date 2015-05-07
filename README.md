@@ -1,5 +1,5 @@
-# Engine Trminal
-The web term version for Engine
+# Engine Login
+A login module for Engine
 
 ## Configuration
 ```js
