@@ -13,8 +13,6 @@ A login module for Engine
         "config": {                     // the values below are the defaults
             // the URL to navigate after logout
             "homeUrl": "/",
-            // the URL to navigate when not logged in and accessing private pages
-            "loginUrl": "/login",
             // the URL to navigate after successful login or signup
             "successUrl": "/",
             // the name of the cookie that stores the session

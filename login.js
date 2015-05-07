@@ -52,26 +52,9 @@ exports.init = function () {
     this.C.redirect = Boolean(this.C.redirect);
     this.C.emitEvents = Boolean(this.C.emitEvents);
     this.C.homeUrl = this.C.homeUrl || DEFAULTS.HOME_URL;
-    this.C.loginUrl = this.C.loginUrl || DEFAULTS.LOGIN_URL;
     this.C.successUrl = this.C.successUrl || DEFAULTS.SUCCESS_URL;
     this.C.returnParam = this.C.returnParam || DEFAULTS.RETURN_PARAM;
     this.C.sessionCookie = this.C.sessionCookie || DEFAULTS.SESSION_COOKIE;
-
-    // normalize pathname and login URL (must end with / for comparison)
-    var pn = window.location.pathname;
-    if (pn.substr(-1) !== '/') {
-        pn += '/';
-    }
-    var lu = this.C.loginUrl;
-    if (lu.substr(-1) !== '/') {
-        lu += '/';
-    }
-
-    // add return URL query string parameter if not on the login page
-    if (pn.indexOf(lu) !== 0 && !SID.get(this.C.sessionCookie) && pn !== this.C.homeUrl) {
-        var returnUrl = window.location.pathname + window.location.search + window.location.hash;
-        window.location = this.C.loginUrl + '?' + this.C.returnParam + '=' + encodeURIComponent(returnUrl);
-    }
 };
 
 exports.signup = function (event, data) {
