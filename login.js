@@ -14,8 +14,11 @@ function error(err, isAlert) {
 }
 
 function emit(eventName, data) {
+    var self = this;
+
     if (this.C.emitEvents) {
-        this.emit({ event: eventName, all: true })
+        var str = self._streams[eventName] || (self._streams[eventName] = self.flow(eventName));
+        str.write(null, data);
     }
 }
 
@@ -47,6 +50,7 @@ function navigateSuccess() {
 exports.init = function () {
     // this makes sure we avoid massive code changes on future API changes
     this.C = this._config;
+    this._streams = {};
 
     // initialize defaults
     this.C.redirect = Boolean(this.C.redirect);
@@ -57,124 +61,201 @@ exports.init = function () {
     this.C.sessionCookie = this.C.sessionCookie || DEFAULTS.SESSION_COOKIE;
 };
 
-exports.signup = function (event, data) {
-
+exports.signup = function (stream) {
     var self = this;
 
-    // check arguments
-    if (!data.email || !data.pass) {
-        return error('Please provide both an email and a password.', true);
-    }
-
-    emit.call(self, 'login_signup');
-
-    var link = self.link('signup', function (err, data) {
+    stream.data(function (err, data) {
 
         if (err) {
-            emit.call(self, 'login_signup_error');
-            alert(err);
-            return;
+            return error(err, false);
         }
 
-        emit.call(self, 'login_signup_ok');
-
-        // navigate to success URL
-        navigateSuccess.call(self);
-
-    }).send(null, data);
-};
-
-exports.login = function (event, data) {
-
-    var self = this;
-
-    // check arguments
-    if (!data.email || !data.pass) {
-        return error('Missing email or password.', true);
-    }
-
-    emit.call(self, 'login_login');
-
-    var link = self.link('login', function (err, data) {
-
-        if (err || !data || !data.sid) {
-            emit.call(self, 'login_login_error');
-            return error(err || 'No session created', true);
+        // check arguments
+        if (!data.email || !data.pass) {
+            return error('Please provide both an email and a password.', true);
         }
 
-        emit.call(self, 'login_login_ok');
+        emit.call(self, 'login_signup');
 
-        // set session cookie
-        SID.set(self.C.sessionCookie, data.sid);
-        // navigate to success URL
-        navigateSuccess.call(self);
+        // create stream
+        var str = self.flow({
+            "call": self._name + "/signupUser"
+        });
 
-    }).send(null, data);
+        // listen for response
+        str.data(function (err, data) {
+
+            if (err) {
+                emit.call(self, 'login_signup_error');
+                alert(err);
+                return;
+            }
+
+            emit.call(self, 'login_signup_ok');
+
+            // navigate to success URL
+            navigateSuccess.call(self);
+        });
+
+        // send data
+        str.write(null, {
+            email: data.email,
+            pass: data.pass
+        });
+    });
 };
 
-exports.logout = function (event) {
-
+exports.login = function (stream) {
     var self = this;
 
-    emit.call(self, 'login_logout');
+    stream.data(function (err, data) {
 
-    var link = self.link('logout', function (err, data) {
-    
         if (err) {
-            emit.call(self, 'login_logout_error');
-            return error(err, true);
+            return error(err, false);
         }
 
-        emit.call(self, 'login_logout_ok');
+        // check arguments
+        if (!data.email || !data.pass) {
+            return error('Missing email or password.', true);
+        }
 
-        // navigate to home URL
-        window.location = self.C.homeUrl;
+        emit.call(self, 'login_login');
 
-    }).send(null, SID.get(self.C.sessionCookie));
+        // create the stream
+        var str = self.flow({
+            "call": self._name + "/loginUser"
+        });
 
-    // remove session cookie
-    SID.rm(self.C.sessionCookie);
+        // listen for response
+        str.data(function (err, data) {
+
+            if (err || !data || !data.sid) {
+                emit.call(self, 'login_login_error');
+                return error(err || 'No session created', true);
+            }
+
+            emit.call(self, 'login_login_ok');
+
+            // set session cookie
+            SID.set(self.C.sessionCookie, data.sid);
+            // navigate to success URL
+            navigateSuccess.call(self);
+        });
+
+        str.write(null, {
+            email: data.email,
+            pass: data.pass
+        });
+    });
+};
+
+exports.logout = function (stream) {
+    var self = this;
+
+    stream.data(function (err, data) {
+
+        if (err) {
+            return error(err, false);
+        }
+
+        // create stream
+        var str = self.flow({
+            "call": self._name + "/logoutUser"
+        });
+
+        // listen for response
+        str.data(function (err, data) {
+
+            if (err) {
+                emit.call(self, 'login_logout_error');
+                return error(err, true);
+            }
+
+            emit.call(self, 'login_logout_ok');
+
+            // navigate to home URL
+            window.location = self.C.homeUrl;
+        });
+
+        // send data
+        str.write(null, SID.get(self.C.sessionCookie));
+
+        // remove session cookie
+        SID.rm(self.C.sessionCookie);
+    });
 };
 
 // TODO
-exports.forgot = function (event, data) {
+exports.forgot = function (stream) {
+    var self = this;
 
-    // check arguments
-    if (!data.email) {
-        return error('We need an email address to send you the reset password link.', true);
-    }
-
-    var link = this.link('forgot', function (err, data) {
+    stream.data(function (err, data) {
 
         if (err) {
-            return error(err, true);
+            return error(err, false);
         }
 
-        // TODO only emit something otherwise this is hardcoded here
-        alert('A reset link was sent to your email address.');
-        location.pathname = '/';
+        // check arguments
+        if (!data.email) {
+            return error('We need an email address to send you the reset password link.', true);
+        }
 
-    }).send(null, data);
+        // create stream
+        var str = self.flow({
+            "call": self._name + "/forgotPassword"
+        });
+
+        // listen for response
+        str.data(function (err, data) {
+
+            if (err) {
+                return error(err, true);
+            }
+
+            // TODO only emit something otherwise this is hardcoded here
+            alert('A reset link was sent to your email address.');
+            location.pathname = '/';
+        });
+
+        // send data
+        str.write(null, data);
+    });
 };
 
 // TODO
 exports.reset = function (event, data) {
+    var self = this;
 
-    // check arguments
-    if (!data.pass) {
-        return error('You can not have an empty password.', true);
-    }
-
-    var link = this.link('reset', function (err, data) {
+    stream.data(function (err, data) {
 
         if (err) {
-            return error(err, true);
+            return error(err, false);
         }
 
-        // TODO only emit something otherwise this is hardcoded here
-        location.pathname = '/login';
+        // check arguments
+        if (!data.pass) {
+            return error('You can not have an empty password.', true);
+        }
 
-    }).send(null, data);
+        // create stream
+        var str = self.flow({
+            "call": self._name + "/resetPassword"
+        });
+
+        // listen for response
+        str.data(function (err, data) {
+
+            if (err) {
+                return error(err, true);
+            }
+
+            // TODO only emit something otherwise this is hardcoded here
+            location.pathname = '/login';
+        });
+
+        // send data
+        str.write(null, data);
+    });
 };
 
 // cookie handling
