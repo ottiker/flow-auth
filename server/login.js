@@ -5,8 +5,11 @@ var credentials = require('../credentials.json');
  *
  * Type: WS
  */
-exports.signupUser = function (link) {
-    link.end('Not implemented');
+exports.signupUser = function (stream) {
+    stream.data(function (err, data) {
+        stream.write("Not implemented");
+        return stream.end();
+    });
 };
 
 /**
@@ -24,13 +27,12 @@ exports.activateUser = function (link) {
  *
  * Type: WS
  */
-exports.loginUser = function (link) {
-    var session = link.session;
-
-    link.data(function(err, data) {
+exports.loginUser = function (stream) {
+    stream.data(function (err, data) {
 
         if (!data || !data.email || !data.pass || !credentials || !credentials[data.email] || credentials[data.email] !== data.pass) {
-            link.end('Invalid user name or password');
+            stream.write('Invalid user name or password');
+            return stream.end();
         }
 
         var user = {
@@ -39,10 +41,11 @@ exports.loginUser = function (link) {
             id: 'Ion'
         };
 
-        link.session.create(user.role, user.locale, user.id, function () {
-setTimeout(function() {
-            link.end(null, { sid: link.session.sid });
-}, 6000);
+        stream.socket.session.create(user.role, user.locale, user.id, function () {
+            setTimeout(function () {
+                stream.write(null, { sid: stream.socket.session.sid });
+                return stream.end();
+            }, 6000);
         });
     });
 };
@@ -52,16 +55,20 @@ setTimeout(function() {
  *
  * Type: WS
  */
-exports.logoutUser = function (link) {
-    var session = link.session;
+exports.logoutUser = function (stream) {
+    stream.data(function (err, data) {
+        var session = stream.socket.session;
 
-    if (!session || !session.destroy) {
-        return link.end('You are already out. Stay out!');
-    }
+        if (!session || !session.destroy) {
+            stream.write('You are already out. Stay out!');
+            return stream.end();
+        }
 
-    // destroy session
-    session.destroy(function () {
-        link.end();
+        // destroy session
+        session.destroy(function () {
+            stream.write();
+            return stream.end();
+        });
     });
 };
 
@@ -70,8 +77,11 @@ exports.logoutUser = function (link) {
  *
  * Type: WS
  */
-exports.forgotPassword = function (link) {
-    link.end('Not implemented');
+exports.forgotPassword = function (stream) {
+    stream.data(function (err, data) {
+        stream.write("Not implemented");
+        return stream.end();
+    });
 };
 
 /**
@@ -79,6 +89,9 @@ exports.forgotPassword = function (link) {
  *
  * Type: WS
  */
-exports.forgotPassword = function (link) {
-    link.end('Not implemented');
+exports.resetPassword = function (stream) {
+    stream.data(function (err, data) {
+        stream.write("Not implemented");
+        return stream.end();
+    });
 };
