@@ -1,5 +1,3 @@
-var credentials = require('../credentials.json');
-
 /**
  * Add a new user if it does not exist.
  *
@@ -28,9 +26,9 @@ exports.activateUser = function (link) {
  * Type: WS
  */
 exports.loginUser = function (stream) {
-    stream.data(function (err, data) {
+    stream.data([this, function (err, data) {
 
-        if (!data || !data.email || !data.pass || !credentials || !credentials[data.email] || credentials[data.email] !== data.pass) {
+        if (!data || !data.email || !data.pass || !this._config.credentials || !this._config.credentials[data.email] || this._config.credentials[data.email] !== data.pass) {
             stream.write('Invalid user name or password');
             return stream.end();
         }
@@ -42,12 +40,10 @@ exports.loginUser = function (stream) {
         };
 
         stream.socket.session.create(user.role, user.locale, user.id, function () {
-            setTimeout(function () {
-                stream.write(null, { sid: stream.socket.session.sid });
-                return stream.end();
-            }, 6000);
+            stream.write(null, { sid: stream.socket.session.sid });
+            stream.end();
         });
-    });
+    }]);
 };
 
 /**
