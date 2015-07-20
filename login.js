@@ -78,9 +78,7 @@ exports.signup = function (stream) {
         emit.call(self, 'login_signup');
 
         // create stream
-        var str = self.flow({
-            "call": self._name + "/signupUser"
-        });
+        var str = self.flow("signupUser");
 
         // listen for response
         str.data(function (err, data) {
@@ -122,9 +120,7 @@ exports.login = function (stream) {
         emit.call(self, 'login_login');
 
         // create the stream
-        var str = self.flow({
-            "call": self._name + "/loginUser"
-        });
+        var str = self.flow("loginUser");
 
         // listen for response
         str.data(function (err, data) {
@@ -159,9 +155,7 @@ exports.logout = function (stream) {
         }
 
         // create stream
-        var str = self.flow({
-            "call": self._name + "/logoutUser"
-        });
+        var str = self.flow("logoutUser");
 
         // listen for response
         str.data(function (err, data) {
@@ -201,9 +195,7 @@ exports.forgot = function (stream) {
         }
 
         // create stream
-        var str = self.flow({
-            "call": self._name + "/forgotPassword"
-        });
+        var str = self.flow("forgotPassword");
 
         // listen for response
         str.data(function (err, data) {
@@ -238,9 +230,7 @@ exports.reset = function (event, data) {
         }
 
         // create stream
-        var str = self.flow({
-            "call": self._name + "/resetPassword"
-        });
+        var str = self.flow("resetPassword");
 
         // listen for response
         str.data(function (err, data) {
