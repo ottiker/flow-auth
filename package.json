@@ -13,32 +13,54 @@
     "homepage": "https://github.com/adioo/login",
     "composition": {
         "flow": [
-            {
-                "on": "loginUser",
-                "call": "loginUser"
-            },
-            {
-                "on": "logoutUser",
-                "call": "logoutUser"
-            },
-            {
-                "on": "signupUser",
-                "call": "signupUser"
-            },
-            {
-                "on": "resetPassword",
-                "call": "resetPassword"
-            },
-            {
-                "on": "forgotPassword",
-                "call": "forgotPassword"
-            }
+            [
+               "loginUser",
+               "loginUser"
+            ],
+            [
+               "logoutUser",
+               "logoutUser"
+            ],
+            [
+               "signupUser",
+               "signupUser"
+            ],
+            [
+               "resetPassword",
+               "resetPassword"
+            ],
+            [
+               "forgotPassword",
+               "forgotPassword"
+            ]
         ],
         "client": {
             "module": [
                 "login.js"
             ],
-            "config": {}
+            "config": {},
+            "flow": [
+                [
+                   "loginUser",
+                   ["link", "loginUser"]
+                ],
+                [
+                   "logoutUser",
+                   ["link", "logoutUser"]
+                ],
+                [
+                   "signupUser",
+                   ["link", "signupUser"]
+                ],
+                [
+                   "resetPassword",
+                   ["link", "resetPassword"]
+                ],
+                [
+                   "forgotPassword",
+                   ["link", "forgotPassword"]
+                ]
+            ]
         }
     }
 }
