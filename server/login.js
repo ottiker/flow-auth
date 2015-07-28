@@ -4,20 +4,9 @@
  * Type: WS
  */
 exports.signupUser = function (stream) {
-    stream.data(function (err, data) {
+    stream.data(function (data) {
         stream.write("Not implemented");
-        return stream.end();
     });
-};
-
-/**
- * Activate user after signup.
- *
- * Type: HTTP
- */
-exports.activateUser = function (link) {
-    // TODO HTTP is different
-    link.end('Not implemented');
 };
 
 /**
@@ -26,11 +15,11 @@ exports.activateUser = function (link) {
  * Type: WS
  */
 exports.loginUser = function (stream) {
-    stream.data([this, function (err, data) {
+    stream.data([this, function (data) {
 
         if (!data || !data.email || !data.pass || !this._config.credentials || !this._config.credentials[data.email] || this._config.credentials[data.email] !== data.pass) {
             stream.write('Invalid user name or password');
-            return stream.end();
+            return;
         }
 
         var user = {
@@ -39,9 +28,8 @@ exports.loginUser = function (stream) {
             id: 'Ion'
         };
 
-        stream.socket.session.create(user.role, user.locale, user.id, function () {
-            stream.write(null, { sid: stream.socket.session.sid });
-            stream.end();
+        stream.context.socket.session.create(user.role, user.locale, user.id, function () {
+            stream.write(null, { sid: stream.context.socket.session.sid });
         });
     }]);
 };
@@ -52,31 +40,18 @@ exports.loginUser = function (stream) {
  * Type: WS
  */
 exports.logoutUser = function (stream) {
-    stream.data(function (err, data) {
-        var session = stream.socket.session;
+    stream.data(function (data) {
+        var session = stream.context.socket.session;
 
         if (!session || !session.destroy) {
-            stream.write('You are already out. Stay out!');
-            return stream.end();
+            stream.write('No session to destroy.');
+            return;
         }
 
         // destroy session
         session.destroy(function () {
             stream.write();
-            return stream.end();
         });
-    });
-};
-
-/**
- * Start a password reset.
- *
- * Type: WS
- */
-exports.forgotPassword = function (stream) {
-    stream.data(function (err, data) {
-        stream.write("Not implemented");
-        return stream.end();
     });
 };
 
@@ -86,8 +61,7 @@ exports.forgotPassword = function (stream) {
  * Type: WS
  */
 exports.resetPassword = function (stream) {
-    stream.data(function (err, data) {
+    stream.data(function (data) {
         stream.write("Not implemented");
-        return stream.end();
     });
 };
