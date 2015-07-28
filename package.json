@@ -28,10 +28,6 @@
             [
                "resetPassword",
                "resetPassword"
-            ],
-            [
-               "forgotPassword",
-               "forgotPassword"
             ]
         ],
         "client": {
@@ -41,24 +37,33 @@
             "config": {},
             "flow": [
                 [
-                   "loginUser",
-                   ["link", "loginUser"]
+                    "loginUser",
+                    [":validate", {"email": "string", "pass": "string"}],
+                    [">link", "loginUser"],
+                    [":session", {"sid": "sid"}],
+                    [">emit", "userLoggedIn"]
                 ],
                 [
-                   "logoutUser",
-                   ["link", "logoutUser"]
+                    "logoutUser",
+                    [":session", {"remove": true}],
+                    [">link", "logoutUser"],
+                    [">emit", "userLoggedOut"]
                 ],
                 [
-                   "signupUser",
-                   ["link", "signupUser"]
+                    "signupUser",
+                    [":validate", {
+                        "user": "string",
+                        "email": "string",
+                        "pass": "string"
+                    }],
+                    [">link", "signupUser"],
+                    [">emit", "userSignedUp"]
                 ],
                 [
-                   "resetPassword",
-                   ["link", "resetPassword"]
-                ],
-                [
-                   "forgotPassword",
-                   ["link", "forgotPassword"]
+                    "resetPassword",
+                    [":validate", {"email": "string"}],
+                    [">link", "resetPassword"],
+                    [">emit", "passwordReseted"]
                 ]
             ]
         }
