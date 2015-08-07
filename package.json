@@ -39,15 +39,15 @@
                 [
                     "loginUser",
                     [":validate", {"email": "string", "pass": "string"}],
-                    [">link", "loginUser"],
+                    [">flow", "@loginUser"],
                     [":session", {"sid": "sid"}],
-                    [">emit", "userLoggedIn"]
+                    [">flow", "userLoggedIn"]
                 ],
                 [
                     "logoutUser",
                     [":session", {"remove": true}],
-                    [">link", "logoutUser"],
-                    [">emit", "userLoggedOut"]
+                    [">flow", "@logoutUser"],
+                    [">flow", "userLoggedOut"]
                 ],
                 [
                     "signupUser",
@@ -56,14 +56,14 @@
                         "email": "string",
                         "pass": "string"
                     }],
-                    [">link", "signupUser"],
-                    [">emit", "userSignedUp"]
+                    [">flow", "@signupUser"],
+                    [">flow", "userSignedUp"]
                 ],
                 [
                     "resetPassword",
                     [":validate", {"email": "string"}],
-                    [">link", "resetPassword"],
-                    [">emit", "passwordReseted"]
+                    [">flow", "@resetPassword"],
+                    [">flow", "passwordReseted"]
                 ]
             ]
         }
