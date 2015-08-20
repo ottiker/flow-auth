@@ -38,7 +38,7 @@
             "flow": [
                 [
                     "loginUser",
-                    [":validate", {"email": "string", "pass": "string"}],
+                    [">flow", "validateLogin"],
                     [">flow", "@loginUser"],
                     [":session", {"sid": "sid"}],
                     [">flow", "userLoggedIn"]
@@ -51,17 +51,13 @@
                 ],
                 [
                     "signupUser",
-                    [":validate", {
-                        "user": "string",
-                        "email": "string",
-                        "pass": "string"
-                    }],
+                    [">flow", "validateSignup"],
                     [">flow", "@signupUser"],
                     [">flow", "userSignedUp"]
                 ],
                 [
                     "resetPassword",
-                    [":validate", {"email": "string"}],
+                    [">flow", "validateReset"],
                     [">flow", "@resetPassword"],
                     [">flow", "passwordReseted"]
                 ]

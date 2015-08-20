@@ -15,19 +15,6 @@ var SID = {
     }
 };
 
-// data validation (should be a separate module)
-exports.validate = function (data, stream, schema) {
-
-    for (var prop in schema) {
-        if (typeof data[prop] !== schema[prop]) {
-            stream.write(new Error('schema validate: Invalid type"' + prop + '"'));
-            return null;
-        }
-    }
-
-    return data;
-};
-
 // set or remove cookie session
 exports.session = function (data, stream, options) {
 
