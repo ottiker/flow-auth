@@ -7,6 +7,9 @@ exports.signupUser = function (stream) {
     stream.data(function (data) {
         stream.write("Not implemented");
     });
+    stream.error(function (err) {
+        stream.write(err);
+    });
 };
 
 /**
@@ -32,6 +35,10 @@ exports.loginUser = function (stream) {
             stream.write(null, { sid: stream.context.socket.session.sid });
         });
     }]);
+
+    stream.error(function (err) {
+        stream.write(err);
+    });
 };
 
 /**
@@ -63,5 +70,8 @@ exports.logoutUser = function (stream) {
 exports.resetPassword = function (stream) {
     stream.data(function (data) {
         stream.write("Not implemented");
+    });
+    stream.error(function (err) {
+        stream.write(err);
     });
 };
