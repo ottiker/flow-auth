@@ -4,8 +4,38 @@
  * Type: WS
  */
 exports.signupUser = function (stream) {
+    var self = this;
     stream.data(function (data) {
-        stream.write("Not implemented");
+
+        if (!data || !data.email || !data.pass || !data.user) {
+            return stream.write('User information not provided');
+        }
+
+        // user create stream
+        var createStream = self.flow("create", true);
+
+        // register user
+        var user = {
+            email: data.email,
+            pass: data.pass,
+            user: data.user
+        };
+        createStream.write(null, {
+            db_name: "users",
+            data: user
+        });
+
+        // listen for create response
+        createStream.data(function (data) {
+            console.log("registerd", data);
+            stream.write(null, {});
+            createStream.end();
+        });
+        createStream.error(function (err) {
+            console.log(err);
+            stream.write(err);
+            createStream.end();
+        });
     });
     stream.error(function (err) {
         stream.write(err);
@@ -18,21 +48,50 @@ exports.signupUser = function (stream) {
  * Type: WS
  */
 exports.loginUser = function (stream) {
+    var self = this;
     stream.data([this, function (data) {
 
-        if (!data || !data.email || !data.pass || !this._config.credentials || !this._config.credentials[data.email] || this._config.credentials[data.email] !== data.pass) {
-            stream.write('Invalid user name or password');
+        if (!data || !data.email || !data.pass) {
+            stream.write('User information not provided');
             return;
         }
+        data.email = data.email || "";
+        data.pass = data.pass || "";
 
-        var user = {
-            role: 'service_user',
-            locale: 'en_US',
-            id: 'Ion'
-        };
+        // create the read stream
+        var readStream = self.flow("read", true);
 
-        stream.context.socket.session.create(user.role, user.locale, user.id, function () {
-            stream.write(null, { sid: stream.context.socket.session.sid });
+        // get the user
+        readStream.write(null, {
+            db_name: "users",
+            query: {
+                email: data.email,
+                pass: data.pass
+            }
+        });
+
+        // listen for read response
+        readStream.data(function (data) {
+
+            if (!data.docs || !data.docs[0]) {
+                return stream.write("Username or password invalid");
+            };
+
+            var user = {
+                role: 'service_user',
+                locale: 'en_US',
+                _id: data.docs[0]._id,
+                username: data.docs[0].user
+            };
+
+            stream.context.socket.session.create(user.role, user.locale, user.id, function () {
+                stream.write(null, { sid: stream.context.socket.session.sid });
+                readStream.end();
+            });
+        });
+        readStream.error(function (err) {
+            stream.write(err);
+            readStream.end();
         });
     }]);
 
