@@ -27,12 +27,10 @@ exports.signupUser = function (stream) {
 
         // listen for create response
         createStream.data(function (data) {
-            console.log("registerd", data);
             stream.write(null, {});
             createStream.end();
         });
         createStream.error(function (err) {
-            console.log(err);
             stream.write(err);
             createStream.end();
         });
