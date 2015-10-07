@@ -78,8 +78,7 @@ exports.loginUser = function (stream) {
             var user = {
                 role: 'service_user',
                 locale: 'en_US',
-                _id: data.docs[0]._id,
-                username: data.docs[0].user
+                id: data.docs[0]._id
             };
 
             stream.context.socket.session.create(user.role, user.locale, user.id, function () {
