@@ -11,28 +11,33 @@ exports.signupUser = function (stream) {
             return stream.write('User information not provided');
         }
 
-        // user create stream
-        var createStream = self.flow("create", true);
-
-        // register user
         var user = {
             email: data.email,
             pass: data.pass,
             user: data.user
         };
-        createStream.write(null, {
-            db_name: "users",
-            data: user
-        });
 
-        // listen for create response
-        createStream.data(function (data) {
-            stream.write(null, {});
-            createStream.end();
-        });
-        createStream.error(function (err) {
-            stream.write(err);
-            createStream.end();
+        // validate user
+        self.flow("validate").write(null, {
+            schema: "users",
+            data: user
+        }).data(function (res) {
+            if (!res.valid) {
+                return stream.write(res.errors[0] || "Error while validating schema");
+            }
+
+            // insert user
+            self.flow("create").write(null, {
+                db_name: "users",
+                data: user
+            }).data(function (data) {
+                return stream.write(null, {});
+            }).error(function (error) {
+                return stream.write(error);
+            });
+
+        }).error(function (error) {
+            return stream.write(error);
         });
     });
     stream.error(function (err) {
@@ -56,21 +61,15 @@ exports.loginUser = function (stream) {
         data.email = data.email || "";
         data.pass = data.pass || "";
 
-        // create the read stream
-        var readStream = self.flow("read", true);
 
         // get the user
-        readStream.write(null, {
+        self.flow("read").write(null, {
             db_name: "users",
             query: {
                 email: data.email,
                 pass: data.pass
             }
-        });
-
-        // listen for read response
-        readStream.data(function (data) {
-
+        }).data(function (data) {
             if (!data.docs || !data.docs[0]) {
                 return stream.write("Username or password invalid");
             };
@@ -82,13 +81,10 @@ exports.loginUser = function (stream) {
             };
 
             stream.context.socket.session.create(user.role, user.locale, user.id, function () {
-                stream.write(null, { sid: stream.context.socket.session.sid });
-                readStream.end();
+                return stream.write(null, { sid: stream.context.socket.session.sid });
             });
-        });
-        readStream.error(function (err) {
-            stream.write(err);
-            readStream.end();
+        }).error(function (error) {
+            return stream.write(error);
         });
     }]);
 
