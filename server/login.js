@@ -28,10 +28,10 @@ exports.signupUser = function (stream) {
 
             // insert user
             self.flow("create").write(null, {
-                db_name: "users",
+                store: "users",
                 data: user
-            }).data(function (data) {
-                return stream.write(null, {});
+            }).data(function (result) {
+                return stream.write(null, result);
             }).error(function (error) {
                 return stream.write(error);
             });
@@ -64,20 +64,20 @@ exports.loginUser = function (stream) {
 
         // get the user
         self.flow("read").write(null, {
-            db_name: "users",
+            store: "users",
             query: {
                 email: data.email,
                 pass: data.pass
             }
-        }).data(function (data) {
-            if (!data.docs || !data.docs[0]) {
+        }).data(function (result) {
+            if (!result || !result[0]) {
                 return stream.write("Username or password invalid");
             };
 
             var user = {
                 role: 'service_user',
                 locale: 'en_US',
-                id: data.docs[0]._id
+                id: result[0]._id
             };
 
             stream.context.socket.session.create(user.role, user.locale, user.id, function () {
