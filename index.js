@@ -16,9 +16,9 @@ var SID = {
 };
 
 // set or remove cookie session
-exports.session = function (data, stream, options) {
+exports.session = function (_options, data, next) {
 
-    options = options || {
+    options = _options || {
         sid: this._config.cookie || 'sid'
     };
     
@@ -31,10 +31,5 @@ exports.session = function (data, stream, options) {
         SID.rm(options.sid);
     }
     
-    return data;
-};
-
-// change url without triggering the popstate event (should be part of the route module)
-exports.navigate = function (data, stream, url) {
-    history.pushState(null, null, (data && data.url) || url);
+    next(null, data)
 };

@@ -1,11 +1,7 @@
 {
     "client": {
         "methods": {
-            "signup": {},
-            "login": {},
-            "logout": {},
-            "forgot": {},
-            "reset": {}
+            "session": {}
         }
     }
 }
