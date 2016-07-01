@@ -1,2 +1,4 @@
-credentials.json
 *.sw?
+*~
+.DS_Store
+bundle.js
