@@ -26,7 +26,11 @@ exports.session = {
 
         clientSession(req, res, function () {
 
-			data.session = data.req.session
+			if (req.session._exp <= new Date().getTime()) {
+				return next('Flow-auth.session.get: Expired.');
+			}
+
+			data.session = req.session
 		    next(null, data);
         });
 	},
@@ -41,6 +45,7 @@ exports.session = {
 		data.req.session.user = data.user;
 		data.req.session.role = data.role;
 		data.req.session.lang = data.lang;
+		data.req.session._exp = new Date().getTime() + defaultSession.duration;
 		next(null, data);
 	},
 
