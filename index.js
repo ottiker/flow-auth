@@ -21,20 +21,58 @@ exports.session = {
 
     // get session data
 	get: function (options, data, next) {
-        clientSession(data.req, data.res, function () {
-			data.session = req.session
+		var req = data.req;
+		var res = data.res;
+
+        clientSession(req, res, function () {
+
+			data.session = data.req.session
 		    next(null, data);
         });
 	},
 
     // set session data
-	set: function () {},
+	set: function (options, data, next) {
+
+		if (!data.req || !data.req.session) {
+			return next(new Error('Flow-auth.session.set: No session found.'));
+		}
+
+		data.req.session.user = data.user;
+		data.req.session.role = data.role;
+		data.req.session.lang = data.lang;
+		next(null, data);
+	},
 
     // destroy the session
-	destroy: function () {}
+	destroy: function (options, data, next) {
+		data.req.session.destroy();
+		next(null, data);
+	}
 };
 
 exports.token = {
-	create: function () {},
-	validate: function () {}
+	create: function (options, data, next) {
+
+		var content = [new Date().getTime() + (1000 * 60 * 10), 'USER_ID'];
+
+		var token = sessions.util.encode(defaultSession, content);
+		data.token = token;
+		console.log('Encoded:', token);
+		next(null, data);
+	},
+	validate: function (options, data, next) {
+
+		var token = data.token;
+		var content = sessions.util.decode(defaultSession, tocken);
+		var now = new Date().getTime();
+
+		console.log('Decoded:', content);
+
+		if (now <= content[0]) {
+			return next(new Error('Flow-auth.token.validate: Expired.'));
+		}
+
+		next(null, data);
+	}
 };
