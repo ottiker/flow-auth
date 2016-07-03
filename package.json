@@ -1,15 +1,23 @@
 {
-    "name": "login",
-    "version": "0.1.0",
-    "description": "jillix engine login module",
-    "main": "index.js",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/adioo/login.git"
-    },
-    "bugs": {
-        "url": "https://github.com/adioo/login/issues"
-    },
-    "homepage": "https://github.com/adioo/login",
-    "composition": {}
+  "name": "flow-auh",
+  "version": "0.1.0",
+  "description": "Authentication for flow.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/adioo/flow-auth.git"
+  },
+  "bugs": {
+    "url": "https://github.com/adioo/flow-auth/issues"
+  },
+  "homepage": "https://github.com/adioo/flow-auth",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "flow",
+    "authentication"
+  ],
+  "author": "Adrian Ottiker <adrian@ottiker.com>",
+  "license": "MIT"
 }
