@@ -1,35 +1,23 @@
-// cookie handling
-var SID = {
+var crypto = require('crypto');
+var clientSessions = require('client-sessions');
+var session = require('./lib/session');
+var token = require('./lib/token');
 
-    get: function (name) {
-        // credentials: https://developer.mozilla.org/en-US/docs/Web/API/Document.cookie
-        return document.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + name.replace(/[\-\.\+\*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1') || null;
-    },
+exports.init = function (config, ready) {
 
-    set: function (name, value) {
-        document.cookie = name + '=' + value + ';path=/';
-    },
+    config = Object.keys(config).length ? config : process.config.flow;
 
-    rm: function (name) {
-        document.cookie = name + '=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    if (!config || !config.session || !config.token) {
+        return ready(new Error('Flow-auth.init: Invalid config.'));
     }
+
+    this.clientSessions = clientSessions(process.config.flow.session);
+    this._session = process.config.flow.session;
+    this._token = process.config.flow.token;
+    this._token.cookieName = 'token';
+
+    ready();
 };
 
-// set or remove cookie session
-exports.session = function (_options, data, next) {
-
-    options = _options || {
-        sid: this._config.cookie || 'sid'
-    };
-    
-    // set session
-    if (!options.remove && data && data[options.sid]) {
-        SID.set(options.sid, data[options.sid]);
-
-    // remove session
-    } else {
-        SID.rm(options.sid);
-    }
-    
-    next(null, data)
-};
+exports.session = session;
+exports.token = token;
