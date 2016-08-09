@@ -2,17 +2,43 @@
     "@context": [
         "http://localhost:8080/context/module.jsonld",
         {
+            "token": "http://www.w3.org/ns/auth/cert#key",
+            "content": "http://rdfs.org/sioc/ns#content"
         }
     ],
     "@id": "https://github.com/adioo/flow-auth#readme",
     "@type": "Module",
     "name": "flow-auth",
     "version": "0.0.1",
-    "description": "Example module for flow",
+    "description": "Authentication for flow",
     "author": "adioo",
     "gitRepository": "git+https://github.com/adioo/flow-auth.git",
     "exports": [
+        {
+            "@type": "DataHandler",
+            "name": "token.create",
+            "options": []
+        },
+        {
+            "@type": "DataHandler",
+            "name": "token.validate",
+            "options": []
+        },
+        {
+            "@type": "DataHandler",
+            "name": "session.get",
+            "options": []
+        },
+        {
+            "@type": "DataHandler",
+            "name": "session.set",
+            "options": []
+        },
+        {
+            "@type": "DataHandler",
+            "name": "session.destroy",
+            "options": []
+        }
     ],
-    "options": [
-    ]
+    "options": []
 }
